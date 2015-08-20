@@ -1,0 +1,30 @@
+{
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "07758E4EF60DD0449B223AD3126CECE650E65CDF",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
+
+  },
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "07758E4EF60DD0449B223AD3126CECE650E65CDF" : 0,
+    "F07C987A170F89C575CF5DD38AF73F1A3B0117C7" : 0
+  },
+  "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "F6E8DF8F-78C9-40C1-BFFB-27100442FC6E",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "07758E4EF60DD0449B223AD3126CECE650E65CDF" : "MotionRecognition",
+    "F07C987A170F89C575CF5DD38AF73F1A3B0117C7" : "speedtest"
+  },
+  "DVTSourceControlWorkspaceBlueprintNameKey" : "MovesTest",
+  "DVTSourceControlWorkspaceBlueprintVersion" : 203,
+  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "MovesTest.xcodeproj",
+  "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/alexsosn\/MotionRecognition.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "07758E4EF60DD0449B223AD3126CECE650E65CDF"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/bitbucket.org\/MakSim0\/speedtest.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "F07C987A170F89C575CF5DD38AF73F1A3B0117C7"
+    }
+  ]
+}

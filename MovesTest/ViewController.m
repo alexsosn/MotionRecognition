@@ -141,7 +141,7 @@ static const CGFloat kPeriod = 0.2;
     
     
     
-    NSURL *url = [NSURL fileURLWithPath:[[NSBundle mainBundle] pathForResource:@"Soi" ofType:@"caf"]];
+    NSURL *url = [NSURL fileURLWithPath:[[NSBundle mainBundle] pathForResource:@"track1" ofType:@"caf"]];
 
     
     AVAudioSession *session = [AVAudioSession sharedInstance];

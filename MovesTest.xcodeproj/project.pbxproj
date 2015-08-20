@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		24D7E8B019C9812D0022CF96 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 24D7E8AF19C9812D0022CF96 /* AudioToolbox.framework */; };
 		24D7E8F019C984340022CF96 /* track1.caf in Resources */ = {isa = PBXBuildFile; fileRef = 24D7E8DE19C984340022CF96 /* track1.caf */; };
-		24D7E8F919C9857F0022CF96 /* Soi.caf in Resources */ = {isa = PBXBuildFile; fileRef = 24D7E8F819C9857F0022CF96 /* Soi.caf */; };
 		731B6F4219D5D1260000A1C7 /* lbimproved.mm in Sources */ = {isa = PBXBuildFile; fileRef = 731B6F4119D5D1260000A1C7 /* lbimproved.mm */; };
 		736A763F19A74EC9009855C2 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 736A763E19A74EC9009855C2 /* Foundation.framework */; };
 		736A764119A74EC9009855C2 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 736A764019A74EC9009855C2 /* CoreGraphics.framework */; };
@@ -42,7 +41,6 @@
 /* Begin PBXFileReference section */
 		24D7E8AF19C9812D0022CF96 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		24D7E8DE19C984340022CF96 /* track1.caf */ = {isa = PBXFileReference; lastKnownFileType = file; name = track1.caf; path = MovesTest/Examples/Sounds/track1.caf; sourceTree = "<group>"; };
-		24D7E8F819C9857F0022CF96 /* Soi.caf */ = {isa = PBXFileReference; lastKnownFileType = file; name = Soi.caf; path = MovesTest/Examples/Sounds/Soi.caf; sourceTree = "<group>"; };
 		731B6F3D19D5D11C0000A1C7 /* dtw.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dtw.h; sourceTree = "<group>"; };
 		731B6F3E19D5D11C0000A1C7 /* querystrategy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = querystrategy.h; sourceTree = "<group>"; };
 		731B6F3F19D5D11C0000A1C7 /* rtreebased.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = rtreebased.h; sourceTree = "<group>"; };
@@ -111,7 +109,6 @@
 			isa = PBXGroup;
 			children = (
 				24D7E8DE19C984340022CF96 /* track1.caf */,
-				24D7E8F819C9857F0022CF96 /* Soi.caf */,
 				736A764419A74EC9009855C2 /* MovesTest */,
 				736A766619A74EC9009855C2 /* MovesTestTests */,
 				736A763D19A74EC9009855C2 /* Frameworks */,
@@ -235,9 +232,6 @@
 				LastUpgradeCheck = 0510;
 				ORGANIZATIONNAME = "Sosnovshchenko Alexander";
 				TargetAttributes = {
-					736A763A19A74EC9009855C2 = {
-						DevelopmentTeam = MM4NKSSYPK;
-					};
 					736A765E19A74EC9009855C2 = {
 						TestTargetID = 736A763A19A74EC9009855C2;
 					};
@@ -267,7 +261,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				24D7E8F919C9857F0022CF96 /* Soi.caf in Resources */,
 				736A765519A74EC9009855C2 /* Main_iPad.storyboard in Resources */,
 				736A765A19A74EC9009855C2 /* Images.xcassets in Resources */,
 				736A765219A74EC9009855C2 /* Main_iPhone.storyboard in Resources */,
