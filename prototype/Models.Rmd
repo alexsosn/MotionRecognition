@@ -1,0 +1,65 @@
+---
+title: "Models"
+author: "Alex Sosnovshchenko"
+date: "September 26, 2014"
+output: html_document
+runtime: shiny
+---
+
+This is web-application demonstrates how our activity recognition algorithms works. 
+
+```{r, echo=FALSE, warning=FALSE}
+## Libraries loading
+library('plyr')
+
+library("caret")
+library("rpart")
+library("rpart.plot")
+
+library("tree")
+library("randomForest")
+library("e1071")
+```
+
+
+```{r, echo=TRUE}
+setwd("~/Desktop/moves_protot")
+train <- read.csv("out_train.csv")
+test <- read.csv("out_test.csv")
+
+eval.model <- function(model, test) {
+  predictions <- predict(model, test, type = "class")
+  a1 = length(test[as.character(test$activity) == as.character(predictions),1]) / length(test[,1])
+  accuracy <- cat('Accuracy: ', as.character(a1*100), '%')
+  print(accuracy)
+  t1 <- table(pred = predictions, true = test$activity)
+  print('Accuracy matrix:')
+  print(t1)
+  heatmap(t1)
+}
+
+fol <- formula(activity ~ mean_acc + sd_acc + max_acc + min_acc + fft_acc + mean_gyro + sd_gyro + max_gyro + min_gyro + fft_gyro)
+
+model <- rpart(fol, method="class", data=train)
+modelF <- randomForest(fol, data=train)
+modelSVM <- svm(fol, data=train)
+modelB <- naiveBayes(fol, data=train)
+
+eval.model(model, test)
+prp(model, type=2, extra=8)
+printcp(model)
+plotcp(model,upper="splits")
+
+eval.model(modelF, test)
+eval.model(modelSVM, test)
+eval.model(modelB, test)
+eval.model(modelF, test)
+
+## Majority ##
+# results <- apply(as.matrix(predictions_matrix), 2, function(x) {names(sort(table(as.factor(x)), decreasing = T)[1])[1]})
+# levels(results) <- levels(disjoint_test$activity.type)
+# a1 = length(disjoint_test[disjoint_test$activity.type == results,1]) / length(disjoint_test[,1])
+# table(pred = results, true = disjoint_test$activity.type)
+
+```
+

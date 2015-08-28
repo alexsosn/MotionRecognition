@@ -1,0 +1,133 @@
+---
+title: "Human activity recognition with smartphone sensors"
+author: "Alex Sosnovshchenko"
+date: "September 24, 2014"
+output: html_document
+runtime: shiny
+---
+
+This is web-application demonstrates how our activity recognition algorithms works. 
+
+```{r, echo=FALSE, warning=FALSE}
+## Libraries loading
+library('plyr')
+
+library("caret")
+library("rpart")
+library("rpart.plot")
+
+library("tree")
+library("randomForest")
+library("e1071")
+```
+
+```{r, echo=FALSE}
+_read.motion.data <- function(path.to.file) {
+  acc <- as.data.frame(scan(path.to.file, 
+                            what=list(date='', sensorName='', 
+                                      activityType='', motionDirection='', onBodyPosition='', 
+                                      x=0, y=0, z=0, 
+                                      accuracy=0, m_activityType=''), 
+                            sep=',', comment.char="", multi.line=F, fileEncoding="UTF-8", 
+                            na.strings="", flush=T, fill=T))
+  acc$date = as.numeric(as.character(acc$date))
+  acc$date = as.POSIXct(acc$date, origin="1970-01-01")
+  colnames(acc)[1]<-"dates"
+  return(acc)
+}
+
+_aggregateMotionData <- function(res) {
+  sec <- cut(res$date, breaks='sec')
+  res <- cbind(res, sec=sec)
+  
+  #counting magnitude
+  res$magnitude = sqrt(as.numeric(res$x)^2+as.numeric(res$y)^2+as.numeric(res$z)^2)
+  res <- res[res$sensorName != "Activity",]
+  res <- res[res$sensorName != "Calibrated_Magnetic_Field",]
+
+  #counting table of predictors
+  res.summary <- ddply(res, ~sec+sensorName, summarise, 
+                       activity.type=cat(
+                         names(sort(summary(activityType), decreasing = T)[1])[1]," ",
+                         names(sort(summary(motion.direction), decreasing = T)[1])[1]," ",
+                         names(sort(summary(on.body.position), decreasing = T)[1])[1],
+                         ),
+                       mean=mean(magnitude), sd=sd(magnitude), 
+                       max=max(magnitude), min=min(magnitude),
+                       fft.max=max(abs(fft(magnitude)))
+  )
+  
+  result <- NA
+  for (level in levels(as.factor(res.summary$sensorName))) {
+    lvl <- res.summary[res.summary$sensorName == level,]
+    names(lvl)[4:8] <- paste(names(lvl)[4:8], "_", level, sep="")
+    lvl <- cbind(lvl[,1],lvl[3:8])
+    if (result == NA) {
+      result <- lvl
+    } else {
+      result <- merge(x = result, y = lvl, by = "sec", all = TRUE)
+    }
+  }
+
+  result$activity.type <- as.factor(result$activity.type)
+  result <- result[complete.cases(result),]
+  return(res.summary)
+}
+
+read.motion.data(path.to.folder) <- function() {
+  filenames <- list.files(path.to.folder, pattern="*.csv", full.names=TRUE)
+  res <- lapply(filenames, _read.motion.data)
+  res <- Reduce(rbind, res)
+  res.summary <- _aggregateMotionData(res)
+  remove(filenames, res)
+  return(res.summary)
+}
+
+train <- read.motion.data("valid_data/train")
+test <- read.motion.data("valid_data/test")
+
+```
+
+## Inputs and Outputs
+
+You can embed Shiny inputs and outputs in your document. Outputs are automatically updated whenever inputs change.  This demonstrates how a standard R plot can be made interactive by wrapping it in the Shiny `renderPlot` function. The `selectInput` and `sliderInput` functions create the input widgets used to drive the plot.
+
+```{r, echo=FALSE}
+inputPanel(
+  selectInput("n_breaks", label = "Number of bins:",
+              choices = c(10, 20, 35, 50), selected = 20),
+  
+  sliderInput("bw_adjust", label = "Bandwidth adjustment:",
+              min = 0.2, max = 2, value = 1, step = 0.2)
+)
+
+renderPlot({
+  hist(faithful$eruptions, probability = TRUE, breaks = as.numeric(input$n_breaks),
+       xlab = "Duration (minutes)", main = "Geyser eruption duration")
+  
+  dens <- density(faithful$eruptions, adjust = input$bw_adjust)
+  lines(dens, col = "blue")
+})
+```
+
+## Embedded Application
+
+It's also possible to embed an entire Shiny application within an R Markdown document using the `shinyAppDir` function. This example embeds a Shiny application located in another directory:
+
+```{r, echo=FALSE}
+shinyAppDir(
+  system.file("examples/06_tabsets", package="shiny"),
+  options=list(
+    width="100%", height=550
+  )
+)
+```
+
+Note the use of the `height` parameter to determine how much vertical space the embedded application should occupy.
+
+You can also use the `shinyApp` function to define an application inline rather then in an external directory.
+
+In all of R code chunks above the `echo = FALSE` attribute is used. This is to prevent the R code within the chunk from rendering in the document alongside the Shiny components.
+
+To learn more, see [Interactive Documents](http://rmarkdown.rstudio.com/authoring_shiny.html).
+

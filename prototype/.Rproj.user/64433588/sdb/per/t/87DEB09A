@@ -1,0 +1,16 @@
+{
+    "contents" : "---\ntitle: \"Models Evaluation\"\nauthor: \"Alex Sosnovshchenko\"\ndate: \"September 26, 2014\"\noutput: html_document\n---\n\n```{r, echo=FALSE, warning=FALSE}\n## Libraries loading\nlibrary('plyr')\n\nlibrary(\"caret\")\nlibrary(\"rpart\")\nlibrary(\"rpart.plot\")\n\nlibrary(\"tree\")\nlibrary(\"randomForest\")\nlibrary(\"e1071\")\n\nsetwd(\"~/Desktop/moves_protot\")\ntrain <- read.csv(\"out_train.csv\")\ntest <- read.csv(\"out_test.csv\")\n```\n\n\n```{r, echo=TRUE}\neval.model <- function(model, test) {\n  predictions <- predict(model, test, type = \"class\")\n  a1 = length(test[as.character(test$activity) == as.character(predictions),1]) / length(test[,1])\n  accuracy <- cat('Accuracy: ', as.character(a1))\n  print(accuracy)\n  t1 <- table(pred = predictions, true = test$activity)\n  print('Accuracy matrix:')\n  print(t1)\n  heatmap(t1)\n}\n```\n\n###Training models\n```{r, comment=FALSE}\nset.seed(12345) \nfol <- formula(activity ~ mean_acc + sd_acc + max_acc + min_acc + fft_acc + mean_gyro + sd_gyro + max_gyro + min_gyro + fft_gyro)\n\nmodel <- rpart(fol, method=\"class\", data=train)\nmodelB <- naiveBayes(fol, data=train)\nmodelSVM <- svm(fol, data=train)\nmodelF <- randomForest(fol, data=train)\n#                        proximity=TRUE,\n#                         keep.forest=FALSE)\n```\n\n### Models Evaluation\n## [Decision tree](http://en.wikipedia.org/wiki/Decision_tree_learning)\n```{r}\neval.model(model, test)\n```\n\nTree diagram\n```{r}\nprp(model, type=2, extra=8)\nprintcp(model)\n```\n\nThe relative error, depending on number of splits\n```{r}\nplotcp(model,upper=\"splits\")\n```\n\n###[Naive Bayes classifier](http://en.wikipedia.org/wiki/Naive_Bayes_classifier)\n```{r}\neval.model(modelB, test)\n```\n\n###[Support vector machine](http://en.wikipedia.org/wiki/Support_vector_machine)\n```{r}\neval.model(modelSVM, test)\n```\n\n##[Random forest](http://en.wikipedia.org/wiki/Random_forest)\n```{r, comment=FALSE}\neval.model(modelF, test)\nplot(modelF, log=\"y\")\n#varImpPlot(modelF)\n#MDSplot(modelF, test$activity)\n```",
+    "created" : 1419023506083.000,
+    "dirty" : true,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3850824014",
+    "id" : "87DEB09A",
+    "lastKnownWriteTime" : 1411763300,
+    "path" : "~/Documents/moves_protot/models_eval.Rmd",
+    "project_path" : "models_eval.Rmd",
+    "properties" : {
+    },
+    "source_on_save" : false,
+    "type" : "r_markdown"
+}

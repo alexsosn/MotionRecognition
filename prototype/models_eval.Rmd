@@ -1,0 +1,85 @@
+---
+title: "Models Evaluation"
+author: "Alex Sosnovshchenko"
+date: "September 26, 2014"
+output: html_document
+---
+
+```{r, echo=FALSE, warning=FALSE}
+## Libraries loading
+library('plyr')
+
+library("caret")
+library("rpart")
+library("rpart.plot")
+
+library("tree")
+library("randomForest")
+library("e1071")
+
+setwd("~/Desktop/moves_protot")
+train <- read.csv("out_train.csv")
+test <- read.csv("out_test.csv")
+```
+
+
+```{r, echo=TRUE}
+eval.model <- function(model, test) {
+  predictions <- predict(model, test, type = "class")
+  a1 = length(test[as.character(test$activity) == as.character(predictions),1]) / length(test[,1])
+  accuracy <- cat('Accuracy: ', as.character(a1))
+  print(accuracy)
+  t1 <- table(pred = predictions, true = test$activity)
+  print('Accuracy matrix:')
+  print(t1)
+  heatmap(t1)
+}
+```
+
+###Training models
+```{r, comment=FALSE}
+set.seed(12345) 
+fol <- formula(activity ~ mean_acc + sd_acc + max_acc + min_acc + fft_acc + mean_gyro + sd_gyro + max_gyro + min_gyro + fft_gyro)
+
+model <- rpart(fol, method="class", data=train)
+modelB <- naiveBayes(fol, data=train)
+modelSVM <- svm(fol, data=train)
+modelF <- randomForest(fol, data=train)
+#                        proximity=TRUE,
+#                         keep.forest=FALSE)
+```
+
+### Models Evaluation
+## [Decision tree](http://en.wikipedia.org/wiki/Decision_tree_learning)
+```{r}
+eval.model(model, test)
+```
+
+Tree diagram
+```{r}
+prp(model, type=2, extra=8)
+printcp(model)
+```
+
+The relative error, depending on number of splits
+```{r}
+plotcp(model,upper="splits")
+```
+
+###[Naive Bayes classifier](http://en.wikipedia.org/wiki/Naive_Bayes_classifier)
+```{r}
+eval.model(modelB, test)
+```
+
+###[Support vector machine](http://en.wikipedia.org/wiki/Support_vector_machine)
+```{r}
+eval.model(modelSVM, test)
+```
+
+##[Random forest](http://en.wikipedia.org/wiki/Random_forest)
+```{r, comment=FALSE}
+eval.model(modelF, test)
+plot(modelF, log="y")
+#varImpPlot(modelF)
+#MDSplot(modelF, test$activity)
+```
