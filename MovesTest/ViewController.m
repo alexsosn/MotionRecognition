@@ -45,6 +45,7 @@ static const CGFloat kPeriod = 0.2;
 
 - (IBAction)recordPressed:(id)sender;
 - (IBAction)deletePressed:(id)sender;
+- (IBAction)restartPrediction:(id)sender;
 
 @property (nonatomic, strong) NSMutableArray *acc_buffer;
 @property (nonatomic, strong) NSMutableArray *gyro_buffer;
@@ -127,8 +128,13 @@ static const CGFloat kPeriod = 0.2;
     }
 }
 
+- (IBAction)restartPrediction:(id)sender {
+    [self stopSampling];
+    [self startSampling];
+}
+
 - (IBAction)recordPressed:(id)sender {
-    self.recording = YES;
+    self.recording = !self.recording;
 
     self.startBtn.selected = !self.startBtn.selected;
     if (self.recording) {
