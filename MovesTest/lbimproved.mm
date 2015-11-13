@@ -9,6 +9,7 @@
 #include "lbimproved/dtw.h"
 #include <fstream>
 #include <string>
+#include <map>
 
 class ChunksParser
 {
@@ -160,49 +161,87 @@ public:
         std::cout << "match gyro percent " << ((float)matchGyroCount / chunks.size()) * 100 << std::endl << std::endl;
     }
     
-    std::string findMatch(uint count, std::vector<double> acc, std::vector<double> gyro) {
+    typedef struct knnResult {
+        std::string name;
+        double support;
+    } KNNResult;
+    
+    KNNResult findMatch(uint count, std::vector<double> acc, std::vector<double> gyro) {
         dtw d(count, 0.1);
+//        LB_Keogh model_acc(acc, 0.1);
+//        LB_Keogh model_gyro(gyro, 0.1);
 
         std::string minActivityType;
         std::string minAccActivityType;
         std::string minGyroActivityType;
         
+        std::vector<std::string> nearestNeighbors;
+        
         double minFD = DBL_MAX;
-        double minFDAcc = DBL_MAX;
-        double minFDGyro = DBL_MAX;
+//        double minFDAcc = DBL_MAX;
+//        double minFDGyro = DBL_MAX;
         
         for (ChunksVector::iterator next = chunks.begin(); next != chunks.end(); ++next)
         {
+//            double fdAcc = model_acc.NearestNeighbor::test(next->acc) / chunkSize;
+//            double fdGyro = model_gyro.NearestNeighbor::test(next->gyro) / chunkSize;
+            
             double fdAcc = d.fastdynamic(acc, next->acc) / chunkSize;
             double fdGyro = d.fastdynamic(gyro, next->gyro) / chunkSize;
-            
+
             {
                 double fd = fdAcc + fdGyro;
                 
                 if (fd != 0 && fd < minFD) {
                     minFD = fd;
-                    
-                    minActivityType = next->activityType;
+                    nearestNeighbors.push_back(next->activityType);
+                    if (nearestNeighbors.size() > 5) { // kNN, k == 5
+                        nearestNeighbors.erase(nearestNeighbors.begin(), nearestNeighbors.begin() + 1);
+                    }
+//                    minActivityType = next->activityType;
                 }
             }
             
-            {
-                if (fdAcc != 0 && fdAcc < minFDAcc) {
-                    minFDAcc = fdAcc;
-                    
-                    minAccActivityType = next->activityType;
-                }
-            }
-            
-            {
-                if (fdGyro != 0 && fdGyro < minFDGyro) {
-                    minFDGyro = fdGyro;
-                    
-                    minGyroActivityType = next->activityType;
-                }
-            }
+//            {
+//                if (fdAcc != 0 && fdAcc < minFDAcc) {
+//                    minFDAcc = fdAcc;
+//                    nearestNeighbors.push_back(next->activityType);
+//                    if (nearestNeighbors.size() > 5) { // kNN, k == 5
+//                        nearestNeighbors.erase(nearestNeighbors.begin(), nearestNeighbors.begin() + 1);
+//                    }
+////                    minAccActivityType = next->activityType;
+//                }
+//            }
+//
+//            {
+//                if (fdGyro != 0 && fdGyro < minFDGyro) {
+//                    minFDGyro = fdGyro;
+//                    
+//                    minGyroActivityType = next->activityType;
+//                }
+//            }
         }
-        return minActivityType;
+        
+        std::map<std::string , int> histogram;
+        
+        for (const string & s : nearestNeighbors) { ++histogram[s]; }
+        
+        double maxNeighbors = 0.0;
+        std::string maxNeighborsActivityType;
+        for (const auto & p : histogram)
+        {
+            if (p.second > maxNeighbors) {
+                maxNeighbors = p.second;
+                maxNeighborsActivityType = p.first;
+            }
+            std::cout << "Word '" << p.first << "' occurs " << p.second << " times.\n";
+        }
+        
+        KNNResult res;
+        res.name = maxNeighborsActivityType;
+        res.support = maxNeighbors/5.0;
+        
+        return res;
     }
     
 private:
@@ -243,9 +282,14 @@ static ChunksParser parser(10);
         
     }
     
-    NSString *activity_res = [NSString stringWithCString:parser.findMatch((uint)gyro_a.count, acc, gyro).c_str()
+    ChunksParser::KNNResult result = parser.findMatch((uint)gyro_a.count, acc, gyro);
+    double support = result.support*100;
+    std::string name = result.name;
+    
+    NSString *activity = [NSString stringWithCString:name.c_str()
                                                 encoding:[NSString defaultCStringEncoding]];
-    return activity_res;
+    NSString *res = [NSString stringWithFormat:@"%@ %@%%", activity, @(support)];
+    return res;
 }
 
 @end

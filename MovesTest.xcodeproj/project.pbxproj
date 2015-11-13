@@ -141,6 +141,7 @@
 		736A764419A74EC9009855C2 /* MovesTest */ = {
 			isa = PBXGroup;
 			children = (
+				F2EC61361B90C20A008D5C34 /* ViewControllers */,
 				731B6F3C19D5D11C0000A1C7 /* lbimproved */,
 				736A764D19A74EC9009855C2 /* AppDelegate.h */,
 				736A764E19A74EC9009855C2 /* AppDelegate.m */,
@@ -184,6 +185,13 @@
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
+		};
+		F2EC61361B90C20A008D5C34 /* ViewControllers */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = ViewControllers;
+			sourceTree = SOURCE_ROOT;
 		};
 /* End PBXGroup section */
 
@@ -232,6 +240,9 @@
 				LastUpgradeCheck = 0510;
 				ORGANIZATIONNAME = "Sosnovshchenko Alexander";
 				TargetAttributes = {
+					736A763A19A74EC9009855C2 = {
+						DevelopmentTeam = AUMEW37ZKN;
+					};
 					736A765E19A74EC9009855C2 = {
 						TestTargetID = 736A763A19A74EC9009855C2;
 					};
@@ -428,6 +439,7 @@
 				GCC_PREFIX_HEADER = "MovesTest/MovesTest-Prefix.pch";
 				INFOPLIST_FILE = "MovesTest/MovesTest-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.owl.MovesTest;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				WRAPPER_EXTENSION = app;
@@ -445,6 +457,7 @@
 				GCC_PREFIX_HEADER = "MovesTest/MovesTest-Prefix.pch";
 				INFOPLIST_FILE = "MovesTest/MovesTest-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.owl.MovesTest;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				WRAPPER_EXTENSION = app;

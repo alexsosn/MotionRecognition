@@ -495,15 +495,14 @@ static const CGFloat kPeriod = 0.2;
 - (void)loadData
 {
     NSString *path = [self pathForFolder];
-    NSArray *directoryContent = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:path error:NULL];
+    NSArray *paths = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:path error:NULL];
+//    NSArray *paths = [[NSBundle mainBundle] pathsForResourcesOfType:@"csv" inDirectory:@"Data"];
     
-    uint count = [directoryContent count];
-    
-    for (int i = 0; i < count; i++)
+    for (NSString *filePath in paths)
     {
-        NSString *filePath = [directoryContent objectAtIndex:i];
-        
-        NSLog(@"File %d: %@", i, filePath);
+        NSLog(@"File %@", path);
+        [Lbimproved loadFileWithPath:path];
+
         [Lbimproved loadFileWithPath:[path stringByAppendingPathComponent:filePath]];
     }
 }
