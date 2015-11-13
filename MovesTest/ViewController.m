@@ -22,49 +22,17 @@ typedef NS_ENUM (NSInteger, SensorsEnum) {
     NUMBER_OF_SENSORS
 };
 
-typedef NS_ENUM(NSInteger, TypeOfMove) {
-   TypeOfMoveWalk = 0,
-   TypeOfMoveRun
-};
-typedef NS_ENUM(NSInteger, TypeOfDirections) {
-    TypeOfDirectionsRoad = 0,
-    TypeOfDirectionsUpstairs,
-    TypeOfDirectionsDownstairs
-};
-
-typedef NS_ENUM(NSInteger, TypeOfPositonPhone) {
-    TypeOfPositonPhonePocket = 0,
-    TypeOfPositonPhonePalm,
-    TypeOfPositonPhoneOnArm,
-    TypeOfPositonPhoneBag
-};
-
-typedef NS_ENUM(NSInteger, TypeOfMoveFast) {
-    TypeOfMoveFastBicycle = 0,
-    TypeOfMoveFastTrain,
-    TypeOfMoveFastAutomotive
-};
-
-typedef NS_ENUM(NSInteger, TypeOfStress) {
-    TypeOfStressStand = 0,
-    TypeOfStressShake
-};
-
 static NSString * const kFolderPath = @"/MyFolder";
 static const CGFloat kPeriod = 0.2;
 
-@interface ViewController () <AVAudioPlayerDelegate> {
-    TypeOfMove _move;
-    TypeOfDirections _direction;
-    TypeOfPositonPhone _position;
+@interface ViewController () <AVAudioPlayerDelegate, UITextFieldDelegate> {
     AVAudioPlayer* _audioPlayer;
 }
 
+@property (weak, nonatomic) IBOutlet UITextField *textField;
 @property (weak, nonatomic) IBOutlet UIButton *startBtn;
 @property (weak, nonatomic) IBOutlet UIButton* deletLogBtn;
 @property (weak, nonatomic) IBOutlet UILabel *activityLabel;
-@property (weak, nonatomic) IBOutlet UILabel *stateLabel;
-@property (weak, nonatomic) IBOutlet UILabel *stepsLabel;
 
 @property (nonatomic, strong) CMMotionManager *mm;
 @property (nonatomic, strong) CMMotionActivityManager *mam;
@@ -75,29 +43,16 @@ static const CGFloat kPeriod = 0.2;
 
 @property (nonatomic, strong) NSDate *currentDate;
 
-- (IBAction)startPressed:(id)sender;
+- (IBAction)recordPressed:(id)sender;
 - (IBAction)deletePressed:(id)sender;
-
-@property (weak, nonatomic) IBOutlet UISegmentedControl *walk_runSC;
-@property (weak, nonatomic) IBOutlet UISegmentedControl *stairs_roadSC;
-@property (weak, nonatomic) IBOutlet UISegmentedControl *onBodySC;
-
-@property (weak, nonatomic) IBOutlet UISegmentedControl *transportSC;
-@property (weak, nonatomic) IBOutlet UISegmentedControl *stand_shakeSC;
-@property (weak, nonatomic) IBOutlet UISwitch *isRecordSwitch;
-
-- (IBAction)walk_runAction:(id)sender;
-- (IBAction)stairs_roadAction:(id)sender;
-- (IBAction)onBodyAction:(id)sender;
-
-- (IBAction)transportAction:(id)sender;
-- (IBAction)standShakeAction:(id)sender;
 
 @property (nonatomic, strong) NSMutableArray *acc_buffer;
 @property (nonatomic, strong) NSMutableArray *gyro_buffer;
 
 @property (nonatomic) double accValue;
 @property (nonatomic) double gyroValue;
+
+@property (nonatomic) BOOL recording;
 
 @end
 
@@ -127,6 +82,7 @@ static const CGFloat kPeriod = 0.2;
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+    self.textField.delegate = self;
     self.mm = [CMMotionManager new];
     [_mm setGyroUpdateInterval:kPeriod];
     [_mm setDeviceMotionUpdateInterval:kPeriod];
@@ -137,8 +93,6 @@ static const CGFloat kPeriod = 0.2;
     self.sc = [CMStepCounter new];
     
     self.buffer = [NSMutableArray array];
-    [self deselectAllButton];
-    
     
     
     NSURL *url = [NSURL fileURLWithPath:[[NSBundle mainBundle] pathForResource:@"track1" ofType:@"caf"]];
@@ -157,62 +111,34 @@ static const CGFloat kPeriod = 0.2;
     [_audioPlayer prepareToPlay];
     [_audioPlayer play];
     
-
+    [self startSampling];
+    [self blockUI:YES];
 }
 
 - (void)audioPlayerDidFinishPlaying:(AVAudioPlayer *)player successfully:(BOOL)flag {
     
 }
 
-- (void)deselectAllButton {
-    [_walk_runSC setSelectedSegmentIndex:UISegmentedControlNoSegment];
-    [_stairs_roadSC setSelectedSegmentIndex:UISegmentedControlNoSegment];
-    [_onBodySC  setSelectedSegmentIndex:UISegmentedControlNoSegment];
-    [_transportSC setSelectedSegmentIndex:UISegmentedControlNoSegment];
-    [_stand_shakeSC setSelectedSegmentIndex:UISegmentedControlNoSegment];
-}
-
 - (void)blockUI:(BOOL )block {
     if (block) {
-        _walk_runSC.enabled = NO;
-        _stairs_roadSC.enabled = NO;
-        _onBodySC.enabled = NO;
-        _transportSC.enabled = NO;
-        _stand_shakeSC.enabled = NO;
         _deletLogBtn.enabled = NO;
     }else {
-        _walk_runSC.enabled = YES;
-        _stairs_roadSC.enabled = YES;
-        _onBodySC.enabled = YES;
-        _transportSC.enabled = YES;
-        _stand_shakeSC.enabled = YES;
         _deletLogBtn.enabled = YES;
     }
 }
 
-- (void)didReceiveMemoryWarning
-{
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
-}
+- (IBAction)recordPressed:(id)sender {
+    self.recording = YES;
 
-- (IBAction)startPressed:(id)sender {
     self.startBtn.selected = !self.startBtn.selected;
-    if (self.startBtn.selected) {
-        [self startWrite];
+    if (self.recording) {
+        [self startSampling];
         [self blockUI:YES];
     } else {
         _startBtn.enabled = NO;
-        [self stopWrite];
+        [self stopSampling];
         [self blockUI:NO];
         _startBtn.enabled = YES;
-    }
-    
-    if ([_isRecordSwitch isOn]) {
-        self.stateLabel.text = @"recording";
-    }
-    else {
-        self.stateLabel.text = @"detecting";
     }
 }
 
@@ -234,7 +160,7 @@ static const CGFloat kPeriod = 0.2;
                       otherButtonTitles:nil] show];
 }
 
--(NSArray *)pathes {
+- (NSArray *)pathes {
     return @[[NSString stringWithFormat:@"/data-%f.csv", self.currentDate.timeIntervalSince1970]];
 }
 
@@ -284,10 +210,12 @@ static const CGFloat kPeriod = 0.2;
     [lock unlock];
 }
 
--(void)startWrite {
+-(void)startSampling {
     [self loadData];
     
-    [self createFile];
+    if (self.recording) {
+        [self createFile];
+    }
     
     NSOperationQueue *allQueue = [NSOperationQueue new];
     
@@ -306,7 +234,7 @@ static const CGFloat kPeriod = 0.2;
                              _accValue,
                              _gyroValue];
             
-            if ([_isRecordSwitch isOn]) {
+            if (self.recording) {
                 [despicableMe addToBuffer:str];
             }
             
@@ -327,7 +255,7 @@ static const CGFloat kPeriod = 0.2;
                              _accValue,
                              _gyroValue];
             
-            if ([_isRecordSwitch isOn]) {
+            if (self.recording) {
                 [despicableMe addToBuffer:str];
             }
             
@@ -335,7 +263,9 @@ static const CGFloat kPeriod = 0.2;
             [self checkBuffer];
         }];
     }
-    
+    /* 
+     //apple default motion detection
+     
     if ([[_mam class] isActivityAvailable]) {
         [_mam startActivityUpdatesToQueue:allQueue withHandler:^(CMMotionActivity *activity)
          {
@@ -351,17 +281,6 @@ static const CGFloat kPeriod = 0.2;
              } else if (activity.automotive){
                  actType = @"automotive";
              }
-             
-//             NSString *str = [NSString stringWithFormat:@"%f,Activity,%@,,,,%@,%@\n",
-//                              activity.startDate.timeIntervalSince1970,
-//                              [self generateMove],
-//                              @(activity.confidence),
-//                              actType
-//                              ];
-//             [despicableMe addToBuffer:str];
-//             dispatch_async(dispatch_get_main_queue(), ^{
-//                 self.activityLabel.text = [NSString stringWithFormat:@"%@ (%@)", actType, @(activity.confidence)];
-//             });
          }];
         
     }
@@ -376,67 +295,18 @@ static const CGFloat kPeriod = 0.2;
                                      
                                      NSString *steps = [NSString stringWithFormat:@"%@", @(numberOfSteps)];
                                      dispatch_async(dispatch_get_main_queue(), ^{
-                                         self.stepsLabel.text = steps;
+//                                         self.stepsLabel.text = steps;
                                      });
                                  }];
+     
     }
+*/
 }
 
 - (NSString *)generateMove {
-    NSString* moveType;
-    if(_transportSC.selectedSegmentIndex == TypeOfMoveFastAutomotive || _transportSC.selectedSegmentIndex == TypeOfMoveFastBicycle || _transportSC.selectedSegmentIndex == TypeOfMoveFastTrain) {
-        if(_transportSC.selectedSegmentIndex == TypeOfMoveFastAutomotive){
-            moveType = @"Automotive,,";
-        }else if(_transportSC.selectedSegmentIndex == TypeOfMoveFastBicycle){
-            moveType = @"Bicycle,,";
-        }else {
-            moveType = @"Train,,";
-        }
-        
-    }else if(_stand_shakeSC.selectedSegmentIndex == TypeOfStressShake || _stand_shakeSC.selectedSegmentIndex == TypeOfStressStand) {
-        if(_stand_shakeSC.selectedSegmentIndex == TypeOfStressShake) {
-            moveType = @"Shake,,";
-        }else {
-            moveType = @"Stand,,";
-        }
-        
-    }else {
-        moveType = [self generateWalkString];
-    }
+    NSString* moveType = self.textField.text;
 
     return moveType;
-}
-
-- (NSString* )generateWalkString {
-    NSString* result;
-    if(_walk_runSC.selectedSegmentIndex == TypeOfMoveRun) {
-        result = [NSString stringWithFormat:@"Run"];
-    }else {
-        result = [NSString stringWithFormat:@"Walk"];
-        [_walk_runSC setSelectedSegmentIndex:TypeOfMoveWalk];
-    }
-    
-    
-    if(_stairs_roadSC.selectedSegmentIndex == TypeOfDirectionsDownstairs){
-        result = [NSString stringWithFormat:@"%@,Downstairs", result];
-    }else if (_stairs_roadSC.selectedSegmentIndex == TypeOfDirectionsUpstairs) {
-        result = [NSString stringWithFormat:@"%@,Upstairs", result];
-    }else {
-        result = [NSString stringWithFormat:@"%@,Along the road", result];
-        [_stairs_roadSC setSelectedSegmentIndex:TypeOfDirectionsRoad];
-    }
-    
-    if(_onBodySC.selectedSegmentIndex == TypeOfPositonPhoneOnArm){
-        result = [NSString stringWithFormat:@"%@,On arm", result];
-    }else if (_onBodySC.selectedSegmentIndex == TypeOfPositonPhoneBag) {
-        result = [NSString stringWithFormat:@"%@,Bag", result];
-    }else if(_onBodySC.selectedSegmentIndex == TypeOfPositonPhonePocket){
-        result = [NSString stringWithFormat:@"%@,Pocket", result];
-    }else {
-        result = [NSString stringWithFormat:@"%@,Palm", result];
-        [_onBodySC setSelectedSegmentIndex:TypeOfPositonPhonePalm];
-    }
-    return result;
 }
 
 -(void)addToBuffer:(NSString *)str {
@@ -444,15 +314,15 @@ static const CGFloat kPeriod = 0.2;
     self.counter ++;
     if (self.counter > 1000) {
         self.counter = 0;
-        dispatch_async(dispatch_get_main_queue(), ^{
-            self.stateLabel.text = @"saving";
-        });
+//        dispatch_async(dispatch_get_main_queue(), ^{
+//            self.stateLabel.text = @"saving";
+//        });
         
         [self saveData];
     }
 }
 
--(void)stopWrite {
+-(void)stopSampling {
     [_mm stopGyroUpdates];
     [_mm stopDeviceMotionUpdates];
     [_mm stopMagnetometerUpdates];
@@ -474,9 +344,9 @@ static const CGFloat kPeriod = 0.2;
         [lock lock];
         [self.buffer removeObjectsInArray:tempArray];
         [lock unlock];
-        dispatch_async(dispatch_get_main_queue(), ^{
-            self.stateLabel.text = @":)";
-        });
+//        dispatch_async(dispatch_get_main_queue(), ^{
+//            self.stateLabel.text = @":)";
+//        });
     }
     if (error) {
         NSLog(@"%@",error);
@@ -507,33 +377,13 @@ static const CGFloat kPeriod = 0.2;
     }
 }
 
-- (IBAction)walk_runAction:(id)sender {
-    [_transportSC setSelectedSegmentIndex:UISegmentedControlNoSegment];
-    [_stand_shakeSC setSelectedSegmentIndex:UISegmentedControlNoSegment];
+-(void)textFieldDidEndEditing:(UITextField *)textField {
+    [textField resignFirstResponder];
 }
 
-- (IBAction)stairs_roadAction:(id)sender {
-    [_transportSC setSelectedSegmentIndex:UISegmentedControlNoSegment];
-    [_stand_shakeSC setSelectedSegmentIndex:UISegmentedControlNoSegment];
-}
-
-- (IBAction)onBodyAction:(id)sender {
-    [_transportSC setSelectedSegmentIndex:UISegmentedControlNoSegment];
-    [_stand_shakeSC setSelectedSegmentIndex:UISegmentedControlNoSegment];
-}
-
-- (IBAction)transportAction:(id)sender {
-    [_stand_shakeSC setSelectedSegmentIndex:UISegmentedControlNoSegment];
-    [_walk_runSC setSelectedSegmentIndex:UISegmentedControlNoSegment];
-    [_stairs_roadSC setSelectedSegmentIndex:UISegmentedControlNoSegment];
-    [_onBodySC setSelectedSegmentIndex:UISegmentedControlNoSegment];
-}
-
-- (IBAction)standShakeAction:(id)sender {
-    [_walk_runSC setSelectedSegmentIndex:UISegmentedControlNoSegment];
-    [_stairs_roadSC setSelectedSegmentIndex:UISegmentedControlNoSegment];
-    [_onBodySC setSelectedSegmentIndex:UISegmentedControlNoSegment];
-    [_transportSC setSelectedSegmentIndex:UISegmentedControlNoSegment];
+-(BOOL)textFieldShouldReturn:(UITextField *)textField {
+    [textField resignFirstResponder];
+    return YES;
 }
 
 @end
